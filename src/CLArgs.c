@@ -5,8 +5,9 @@
 
 #include "CLArgs.h"
 
-#include "Error.h"
 #include "Logger.h"
+
+DECLARE_RESULT_SOURCE(AppState);
 
 typedef struct ParseIntContext
 {
@@ -28,7 +29,9 @@ static error_t parseArg(int key, char* arg, struct argp_state* state)
 
     assert(state);
 
-    ThrowStatOptions* opts = (ThrowStatOptions*)state->input;
+    AppState* opts = (AppState*)state->input;
+
+    LogDebug("key(%d): %c\narg: %s", key, key, arg);
 
     switch (key)
     {
@@ -42,6 +45,37 @@ case optkey:                                                            \
 #include "codegen/Options.h"
 
 #undef DEF_OPTION
+
+        case ARGP_KEY_ARG:
+        {
+            if (state->arg_num > 1)
+            {
+                err = EINVAL;
+                LogError("Give only one positional option to select mode.");
+                ERROR_LEAVE();
+            }
+
+#define DEF_MODE(modmode, modname, moddefaultstate, ...)                \
+if (strcmp(arg, modname) == 0)                                          \
+{                                                                       \
+    opts->mode         = modmode;                                       \
+    opts->throwOptions = moddefaultstate;                               \
+}                                                                       \
+else
+
+#include "codegen/Modes.h"
+
+#undef DEF_MODE
+
+         // else
+            {
+                err = EINVAL;
+                LogError("Invalid mode %s", arg);
+                ERROR_LEAVE();
+            }
+            LogDebug("Anal");
+            break;
+        }
         default:
             return ARGP_ERR_UNKNOWN;
     }
@@ -50,7 +84,7 @@ ERROR_CASE
     return err;
 }
 
-ResultThrowStatOptions ParseCLArgs(int argc, const char* argv[])
+ResultAppState ParseCLArgs(int argc, const char* argv[])
 {
     ERROR_CHECKING();
 
@@ -80,10 +114,10 @@ ResultThrowStatOptions ParseCLArgs(int argc, const char* argv[])
         .args_doc = argsDoc,
     };
 
-    ThrowStatOptions throwOptions = DEFAULT_THROW_OPTIONS;
+    AppState state = {};
 
     int unparsedArg = 0;
-    error_t parseErr = argp_parse(&parser, argc, (char**)argv, 0, &unparsedArg, &throwOptions);
+    error_t parseErr = argp_parse(&parser, argc, (char**)argv, 0, &unparsedArg, &state);
 
     if (parseErr != 0)
     {
@@ -92,7 +126,7 @@ ResultThrowStatOptions ParseCLArgs(int argc, const char* argv[])
         ERROR_LEAVE();
     }
 
-    return ResultThrowStatOptionsCtor(throwOptions, EVERYTHING_FINE);
+    return ResultAppStateCtor(state, EVERYTHING_FINE);
 ERROR_CASE
-    return ResultThrowStatOptionsCtor((ThrowStatOptions){}, err);
+    return ResultAppStateCtor((AppState){}, err);
 }

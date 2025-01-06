@@ -1,14 +1,9 @@
-#include <stdlib.h>
 #include <limits.h>
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
 #include <argp.h>
 
-#include "Logger.h"
 #include "Vector.h"
-#include "StatColumn.h"
 #include "CLArgs.h"
+#include "ModeFunctions.h" // IWYU pragma: keep
 
 int CompareInt(const void* a, const void* b);
 
@@ -20,19 +15,30 @@ int main(int argc, const char* argv[])
 
     Stats stats = {};
 
-    ResultThrowStatOptions throwOptionsRes = ParseCLArgs(argc, argv);
-    CHECK_ERROR(throwOptionsRes.errorCode);
-    ThrowStatOptions throwOptions = throwOptionsRes.value;
+    ResultAppState stateRes = ParseCLArgs(argc, argv);
+    CHECK_ERROR(stateRes.errorCode);
+    AppState state = stateRes.value;
 
-    CHECK_ERROR(VecExpand(stats, throwOptions.nstats));
+    PrintThrowOptions(stdout, state.throwOptions);
 
-    srand(time(NULL));
-
-    for (int i = 0; i < throwOptions.ncols; i++)
+    switch (state.mode)
     {
-        ThrowStatColumn(&stats, throwOptions);
-        PrintStatColumn(stdout, stats);
-        VecClear(stats);
+
+#define DEF_MODE(modmode, modname, moddefaultstate, modfunction, ...)   \
+case modmode:                                                           \
+{                                                                       \
+    modfunction(state);                                                 \
+    break;                                                              \
+}
+
+#include "codegen/Modes.h"
+
+#undef DEF_MODE
+
+        default:
+            err = ERROR_BAD_VALUE;
+            LogError("Error bad mode: %d", state.mode);
+            ERROR_LEAVE();
     }
 
 ERROR_CASE

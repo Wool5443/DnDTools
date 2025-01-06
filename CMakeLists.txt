@@ -20,7 +20,9 @@ set(SOURCES
     "src/main.c"
     "src/Roll.c"
     "src/CLArgs.c"
-    "src/StatColumn.c"
+    "src/ModeFunctions.c"
+    "src/ThrowOptions.c"
+    "src/ThrowStats.c"
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

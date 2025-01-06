@@ -1,12 +1,10 @@
 #include <limits.h>
+#include <stdio.h>
 
 #include "Vector.h"
-#include "StatColumn.h"
+#include "ThrowStats.h"
 
-DECLARE_RESULT_SOURCE(Stats);
-DECLARE_RESULT_SOURCE(ThrowStatOptions);
-
-void ThrowStatColumn(Stats* stats, ThrowStatOptions opts)
+void ThrowStatColumn(Stats* stats, ThrowOptions opts)
 {
     for (int i = 0; i < opts.nstats; i++)
     {
@@ -26,6 +24,8 @@ void ThrowStatColumn(Stats* stats, ThrowStatOptions opts)
 
 void PrintStatColumn(FILE* file, Stats stats)
 {
+    assert(file);
+
     if (!stats || VecSize(stats) == 0)
     {
         LogDebug("Tried to print empty stats");
@@ -39,4 +39,3 @@ void PrintStatColumn(FILE* file, Stats stats)
     }
     fputc('\n', file);
 }
-
