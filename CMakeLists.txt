@@ -21,7 +21,7 @@ set(SOURCES
     "src/Roll.c"
     "src/CLArgs.c"
     "src/ModeFunctions.c"
-    "src/ThrowOptions.c"
+    "src/Options.c"
     "src/ThrowStats.c"
 )
 

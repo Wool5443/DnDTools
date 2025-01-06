@@ -4,7 +4,7 @@
 #include "Vector.h"
 #include "ThrowStats.h"
 
-void ThrowStatColumn(Stats* stats, ThrowOptions opts)
+void ThrowStatColumn(Stats* stats, Options opts)
 {
     for (int i = 0; i < opts.nstats; i++)
     {

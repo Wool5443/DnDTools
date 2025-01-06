@@ -4,7 +4,7 @@
 
 ErrorCode DiceMode(AppState state)
 {
-    if (state.throwOptions.ndice == 0)
+    if (state.options.ndice == 0)
     {
         printf("Throwing 0 dices...\n");
         return EVERYTHING_FINE;
@@ -12,12 +12,12 @@ ErrorCode DiceMode(AppState state)
 
     srand(time(NULL));
 
-    int roll = RollDice(state.throwOptions.dice);
+    int roll = RollDice(state.options.dice);
     printf("%d", roll);
 
-    for (int i = 1; i < state.throwOptions.ndice; i++)
+    for (int i = 1; i < state.options.ndice; i++)
     {
-        roll = RollDice(state.throwOptions.dice);
+        roll = RollDice(state.options.dice);
         printf(" %d", roll);
     }
 
@@ -32,13 +32,13 @@ ErrorCode StatsMode(AppState state)
 
     Stats stats = {};
 
-    CHECK_ERROR(VecExpand(stats, state.throwOptions.nstats));
+    CHECK_ERROR(VecExpand(stats, state.options.nstats));
 
     srand(time(NULL));
 
-    for (int i = 0; i < state.throwOptions.ncols; i++)
+    for (int i = 0; i < state.options.ncols; i++)
     {
-        ThrowStatColumn(&stats, state.throwOptions);
+        ThrowStatColumn(&stats, state.options);
         PrintStatColumn(stdout, stats);
         VecClear(stats);
     }

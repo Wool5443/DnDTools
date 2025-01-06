@@ -6,27 +6,27 @@
 
 typedef DiceType* Stats;
 
-typedef struct ThrowOptions
+typedef struct Options
 {
     DiceType dice;
     int      ndice;
     int      ncols;
     int      nstats;
     bool     rethrowOnes;
-} ThrowOptions;
+} Options;
 
-static ThrowOptions DEFAULT_STATS_MODE = {
+static Options DEFAULT_STATS_MODE = {
     .dice        = 6,
     .ncols       = 2,
     .nstats      = 6,
     .rethrowOnes = false,
 };
 
-static ThrowOptions DEFAULT_DICE_MODE = {
+static Options DEFAULT_DICE_MODE = {
     .dice  = 20,
     .ndice = 1,
 };
 
-void PrintThrowOptions(FILE* file, ThrowOptions opts);
+void PrintOptions(FILE* file, Options opts);
 
 #endif // THROW_OPTIONS_H_

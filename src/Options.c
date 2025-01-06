@@ -1,9 +1,9 @@
 #include <limits.h>
 #include <assert.h>
 
-#include "ThrowOptions.h"
+#include "Options.h"
 
-void PrintThrowOptions(FILE* file, ThrowOptions opts)
+void PrintOptions(FILE* file, Options opts)
 {
     assert(file);
 

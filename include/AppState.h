@@ -2,7 +2,7 @@
 #define APP_STATE_H_
 
 #include "Result.h"
-#include "ThrowOptions.h"
+#include "Options.h"
 
 typedef enum AppMode
 {
@@ -18,8 +18,8 @@ static const char* AppModeNames[] = {
 
 typedef struct AppState
 {
-    AppMode      mode;
-    ThrowOptions throwOptions;
+    AppMode mode;
+    Options options;
 } AppState;
 
 DECLARE_RESULT_HEADER(AppState);

@@ -19,7 +19,7 @@ int main(int argc, const char* argv[])
     CHECK_ERROR(stateRes.errorCode);
     AppState state = stateRes.value;
 
-    PrintThrowOptions(stdout, state.throwOptions);
+    PrintOptions(stdout, state.options);
 
     switch (state.mode)
     {

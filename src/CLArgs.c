@@ -35,9 +35,9 @@ static ParseIntContext parseInt(const char* str)
     return (ParseIntContext){.value = value, .endptr = endptr};
 }
 
-static ThrowOptions setDefaults(AppState state, ThrowOptions defaultOpts)
+static Options setDefaults(AppState state, Options defaultOpts)
 {
-    ThrowOptions newOpts = state.throwOptions;
+    Options newOpts = state.options;
 
     if (!newOpts.dice)        newOpts.dice        = defaultOpts.dice;
     if (!newOpts.ndice)       newOpts.ndice       = defaultOpts.ndice;
@@ -60,22 +60,22 @@ static error_t parseArg(int key, char* arg, struct argp_state* state)
     {
         case 'd': // dice
         {
-            PARSE_INT_OPTION(appState->throwOptions.dice);
+            PARSE_INT_OPTION(appState->options.dice);
             return EVERYTHING_FINE;
         }
         case 'n': // dice
         {
-            PARSE_INT_OPTION(appState->throwOptions.ndice);
+            PARSE_INT_OPTION(appState->options.ndice);
             return EVERYTHING_FINE;
         }
         case 'c': // dice
         {
-            PARSE_INT_OPTION(appState->throwOptions.ncols);
+            PARSE_INT_OPTION(appState->options.ncols);
             return EVERYTHING_FINE;
         }
         case 's': // dice
         {
-            PARSE_INT_OPTION(appState->throwOptions.nstats);
+            PARSE_INT_OPTION(appState->options.nstats);
             return EVERYTHING_FINE;
         }
 
@@ -169,10 +169,10 @@ ResultAppState ParseCLArgs(int argc, const char* argv[])
     switch (state.mode)
     {
     case DICE_MODE:
-        state.throwOptions = setDefaults(state, DEFAULT_DICE_MODE);
+        state.options = setDefaults(state, DEFAULT_DICE_MODE);
         break;
     case STATS_MODE:
-        state.throwOptions = setDefaults(state, DEFAULT_STATS_MODE);
+        state.options = setDefaults(state, DEFAULT_STATS_MODE);
         break;
     default:
         err = ERROR_BAD_VALUE;
