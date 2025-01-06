@@ -14,6 +14,7 @@
         err = EINVAL;                                       \
         LogError("Failed to parse int: %s, error at %s",    \
                  arg, context.endptr);                      \
+        argp_usage(state);                                  \
         return err;                                         \
     }                                                       \
     optfield = context.value;                               \
@@ -85,6 +86,7 @@ static error_t parseArg(int key, char* arg, struct argp_state* state)
             {
                 err = EINVAL;
                 LogError("Give only one positional option to select mode.");
+                argp_usage(state);
                 return err;
             }
 
@@ -99,6 +101,7 @@ static error_t parseArg(int key, char* arg, struct argp_state* state)
 
             err = EINVAL;
             LogError("Invalid mode %s", arg);
+            argp_usage(state);
             return err;
         }
     default:
@@ -111,7 +114,7 @@ ResultAppState ParseCLArgs(int argc, const char* argv[])
     ERROR_CHECKING();
 
     const char* doc = "A simple stats thrower for DND";
-    const char* argsDoc = "";
+    const char* argsDoc = "dice|stats";
 
     struct argp_option parseOptions[] = {
         (struct argp_option){

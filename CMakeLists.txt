@@ -3,7 +3,7 @@ set(projectName "DndTools")
 
 project(${projectName} C)
 
-# add_compile_definitions("DISABLE_LOGGING")
+add_compile_definitions("DISABLE_LOGGING")
 
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED true)
