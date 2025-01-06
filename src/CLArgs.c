@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
-#include <errno.h>
 
 #include "CLArgs.h"
 
@@ -33,45 +32,16 @@ static error_t parseArg(int key, char* arg, struct argp_state* state)
 
     switch (key)
     {
-        case 'd':
-        {
-            ParseIntContext context = parseInt(arg);
-            if (*context.endptr != '\0')
-            {
-                err = EINVAL;
-                LogError("Failed to parse int: %s, error at %s", arg, context.endptr);
-                ERROR_LEAVE();
-            }
-            opts->type = context.value;
-            break;
-        }
-        case 'c':
-        {
-            ParseIntContext context = parseInt(arg);
-            if (*context.endptr != '\0')
-            {
-                err = EINVAL;
-                LogError("Failed to parse int: %s, error at %s", arg, context.endptr);
-                ERROR_LEAVE();
-            }
-            opts->ncols = context.value;
-            break;
-        }
-        case 's':
-        {
-            ParseIntContext context = parseInt(arg);
-            if (*context.endptr != '\0')
-            {
-                err = EINVAL;
-                LogError("Failed to parse int: %s, error at %s", arg, context.endptr);
-                ERROR_LEAVE();
-            }
-            opts->nstats = context.value;
-            break;
-        }
-        case 'r':
-            opts->rethrowOnes = true;
-            break;
+#define DEF_OPTION(optname, optkey, optarg, optdoc, optparseCode, ...)  \
+case optkey:                                                            \
+{                                                                       \
+    optparseCode                                                        \
+    break;                                                              \
+}
+
+#include "codegen/Options.h"
+
+#undef DEF_OPTION
         default:
             return ARGP_ERR_UNKNOWN;
     }
@@ -88,30 +58,18 @@ ResultThrowStatOptions ParseCLArgs(int argc, const char* argv[])
     const char* argsDoc = "";
 
     struct argp_option parseOptions[] = {
-        (struct argp_option){
-            .name = "dice",
-            .key  = 'd',
-            .arg  = "type",
-            .doc  = "Specify type of dice for throwing stats."
-                    "Can be any integer.",
-        },
-        (struct argp_option){
-            .name = "ncols",
-            .key  = 'c',
-            .arg  = "cols",
-            .doc  = "Number of stat columns to throw."
-        },
-        (struct argp_option){
-            .name = "nstats",
-            .key  = 's',
-            .arg  = "stats",
-            .doc  = "Number of stats in a column."
-        },
-        (struct argp_option){
-            .name = "rethrow-ones",
-            .key  = 'r',
-            .doc  = "If set than all ones are rethrow one time."
-        },
+
+#define DEF_OPTION(optname, optkey, optarg, optdoc, ...)    \
+(struct argp_option) {                                      \
+    .name = optname,                                        \
+    .key  = optkey,                                         \
+    .arg  = optarg,                                         \
+    .doc  = optdoc,                                         \
+},
+
+#include "codegen/Options.h"
+
+#undef DEF_OPTION
         {},
     };
 

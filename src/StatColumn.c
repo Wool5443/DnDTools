@@ -14,7 +14,7 @@ void ThrowStatColumn(Stats* stats, ThrowStatOptions opts)
         int min = INT_MAX;
         for (size_t j = 0; j < 4; j++)
         {
-            int roll = RollStatDice(opts.type, opts.rethrowOnes);
+            int roll = RollStatDice(opts.dice, opts.rethrowOnes);
             min = roll < min ? roll : min;
             sum += roll;
         }

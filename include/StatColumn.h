@@ -10,7 +10,7 @@ DECLARE_RESULT_HEADER(Stats);
 
 typedef struct ThrowStatOptions
 {
-    DiceType type;
+    DiceType dice;
     int      ncols;
     int      nstats;
     bool     rethrowOnes;
@@ -18,7 +18,7 @@ typedef struct ThrowStatOptions
 DECLARE_RESULT_HEADER(ThrowStatOptions);
 
 static ThrowStatOptions DEFAULT_THROW_OPTIONS = {
-    .type        = 6,
+    .dice        = 6,
     .ncols       = 2,
     .nstats      = 6,
     .rethrowOnes = false,
