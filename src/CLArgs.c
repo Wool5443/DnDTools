@@ -1,11 +1,23 @@
 #include <argp.h>
 #include <stdlib.h>
-#include <time.h>
 #include <string.h>
+#include <time.h>
 
 #include "CLArgs.h"
-
 #include "Logger.h"
+
+#define PARSE_INT_OPTION(optfield)                          \
+{                                                           \
+    ParseIntContext context = parseInt(arg);                \
+    if (*context.endptr != '\0')                            \
+    {                                                       \
+        err = EINVAL;                                       \
+        LogError("Failed to parse int: %s, error at %s",    \
+                 arg, context.endptr);                      \
+        return err;                                         \
+    }                                                       \
+    optfield = context.value;                               \
+}
 
 DECLARE_RESULT_SOURCE(AppState);
 
@@ -20,7 +32,20 @@ static ParseIntContext parseInt(const char* str)
     char* endptr = NULL;
     int value = strtol(str, &endptr, 10);
 
-    return (ParseIntContext){ .value = value, .endptr = endptr };
+    return (ParseIntContext){.value = value, .endptr = endptr};
+}
+
+static ThrowOptions setDefaults(AppState state, ThrowOptions defaultOpts)
+{
+    ThrowOptions newOpts = state.throwOptions;
+
+    if (!newOpts.dice)        newOpts.dice        = defaultOpts.dice;
+    if (!newOpts.ndice)       newOpts.ndice       = defaultOpts.ndice;
+    if (!newOpts.ncols)       newOpts.ncols       = defaultOpts.ncols;
+    if (!newOpts.nstats)      newOpts.nstats      = defaultOpts.nstats;
+    if (!newOpts.rethrowOnes) newOpts.rethrowOnes = defaultOpts.rethrowOnes;
+
+    return newOpts;
 }
 
 static error_t parseArg(int key, char* arg, struct argp_state* state)
@@ -29,22 +54,30 @@ static error_t parseArg(int key, char* arg, struct argp_state* state)
 
     assert(state);
 
-    AppState* opts = (AppState*)state->input;
-
-    LogDebug("key(%d): %c\narg: %s", key, key, arg);
+    AppState* appState = (AppState*)state->input;
 
     switch (key)
     {
-#define DEF_OPTION(optname, optkey, optarg, optdoc, optparseCode, ...)  \
-case optkey:                                                            \
-{                                                                       \
-    optparseCode                                                        \
-    break;                                                              \
-}
-
-#include "codegen/Options.h"
-
-#undef DEF_OPTION
+        case 'd': // dice
+        {
+            PARSE_INT_OPTION(appState->throwOptions.dice);
+            return EVERYTHING_FINE;
+        }
+        case 'n': // dice
+        {
+            PARSE_INT_OPTION(appState->throwOptions.ndice);
+            return EVERYTHING_FINE;
+        }
+        case 'c': // dice
+        {
+            PARSE_INT_OPTION(appState->throwOptions.ncols);
+            return EVERYTHING_FINE;
+        }
+        case 's': // dice
+        {
+            PARSE_INT_OPTION(appState->throwOptions.nstats);
+            return EVERYTHING_FINE;
+        }
 
         case ARGP_KEY_ARG:
         {
@@ -52,36 +85,25 @@ case optkey:                                                            \
             {
                 err = EINVAL;
                 LogError("Give only one positional option to select mode.");
-                ERROR_LEAVE();
+                return err;
             }
 
-#define DEF_MODE(modmode, modname, moddefaultstate, ...)                \
-if (strcmp(arg, modname) == 0)                                          \
-{                                                                       \
-    opts->mode         = modmode;                                       \
-    opts->throwOptions = moddefaultstate;                               \
-}                                                                       \
-else
-
-#include "codegen/Modes.h"
-
-#undef DEF_MODE
-
-         // else
+            for (int i = 0; i < APP_MODE_COUNT; i++)
             {
-                err = EINVAL;
-                LogError("Invalid mode %s", arg);
-                ERROR_LEAVE();
+                if (strcmp(arg, AppModeNames[i]) == 0)
+                {
+                    appState->mode = i;
+                    return EVERYTHING_FINE;
+                }
             }
-            LogDebug("Anal");
-            break;
-        }
-        default:
-            return ARGP_ERR_UNKNOWN;
-    }
 
-ERROR_CASE
-    return err;
+            err = EINVAL;
+            LogError("Invalid mode %s", arg);
+            return err;
+        }
+    default:
+        return ARGP_ERR_UNKNOWN;
+    }
 }
 
 ResultAppState ParseCLArgs(int argc, const char* argv[])
@@ -92,25 +114,43 @@ ResultAppState ParseCLArgs(int argc, const char* argv[])
     const char* argsDoc = "";
 
     struct argp_option parseOptions[] = {
-
-#define DEF_OPTION(optname, optkey, optarg, optdoc, ...)    \
-(struct argp_option) {                                      \
-    .name = optname,                                        \
-    .key  = optkey,                                         \
-    .arg  = optarg,                                         \
-    .doc  = optdoc,                                         \
-},
-
-#include "codegen/Options.h"
-
-#undef DEF_OPTION
+        (struct argp_option){
+            .name = "dice",
+            .key = 'd',
+            .arg = "type",
+            .doc = "Specify type of dice for throwing stats. Can be any integer.",
+        },
+        (struct argp_option){
+            .name = "ndice",
+            .key = 'n',
+            .arg = "dice count",
+            .doc = "How much dice to throw.",
+        },
+        (struct argp_option){
+            .name = "ncols",
+            .key = 'c',
+            .arg = "cols",
+            .doc = "Number of stat columns to throw.",
+        },
+        (struct argp_option){
+            .name = "nstats",
+            .key = 's',
+            .arg = "stats",
+            .doc = "Number of stats in a column.",
+        },
+        (struct argp_option){
+            .name = "rethrow-ones",
+            .key = 'r',
+            .arg = NULL,
+            .doc = "If set than all ones are rethrow one time.",
+        },
         {},
     };
 
     struct argp parser = {
-        .options  = parseOptions,
-        .parser   = parseArg,
-        .doc      = doc,
+        .options = parseOptions,
+        .parser = parseArg,
+        .doc = doc,
         .args_doc = argsDoc,
     };
 
@@ -126,7 +166,21 @@ ResultAppState ParseCLArgs(int argc, const char* argv[])
         ERROR_LEAVE();
     }
 
+    switch (state.mode)
+    {
+    case DICE_MODE:
+        state.throwOptions = setDefaults(state, DEFAULT_DICE_MODE);
+        break;
+    case STATS_MODE:
+        state.throwOptions = setDefaults(state, DEFAULT_STATS_MODE);
+        break;
+    default:
+        err = ERROR_BAD_VALUE;
+        LogError("Bad mode: %d", state.mode);
+        ERROR_LEAVE();
+    }
+
     return ResultAppStateCtor(state, EVERYTHING_FINE);
-ERROR_CASE
+    ERROR_CASE
     return ResultAppStateCtor((AppState){}, err);
 }

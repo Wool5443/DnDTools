@@ -6,14 +6,15 @@
 
 typedef enum AppMode
 {
-
-#define DEF_MODE(mode, ...) mode,
-
-#include "codegen/Modes.h"
-
-#undef DEF_MODE
-
+    DICE_MODE,
+    STATS_MODE,
+    APP_MODE_COUNT,
 } AppMode;
+
+static const char* AppModeNames[] = {
+    "dice",
+    "stats",
+};
 
 typedef struct AppState
 {

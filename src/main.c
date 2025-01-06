@@ -23,18 +23,12 @@ int main(int argc, const char* argv[])
 
     switch (state.mode)
     {
-
-#define DEF_MODE(modmode, modname, moddefaultstate, modfunction, ...)   \
-case modmode:                                                           \
-{                                                                       \
-    modfunction(state);                                                 \
-    break;                                                              \
-}
-
-#include "codegen/Modes.h"
-
-#undef DEF_MODE
-
+        case DICE_MODE:
+            CHECK_ERROR(DiceMode(state));
+            break;
+        case STATS_MODE:
+            CHECK_ERROR(StatsMode(state));
+            break;
         default:
             err = ERROR_BAD_VALUE;
             LogError("Error bad mode: %d", state.mode);
