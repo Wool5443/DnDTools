@@ -4,7 +4,8 @@
 #include <vector>
 #include <ostream>
 #include <format>
-#include "Roll.hpp"
+
+using DiceInt = unsigned;
 
 struct DiceModeOptions
 {
