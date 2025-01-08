@@ -6,16 +6,9 @@ int main(int argc, const char* argv[])
 {
     try
     {
-        auto opts = *ParseCLI(argc, argv);
+        auto opts = ParseCLI(argc, argv).value();
 
-        if (DiceModeOptions* dice = std::get_if<DiceModeOptions>(&opts))
-        {
-            RunDiceMode(*dice);
-        }
-        else if (StatsModeOptions* stats = std::get_if<StatsModeOptions>(&opts))
-        {
-            RunStatsMode(*stats);
-        }
+        std::visit(ModeVisitor(), opts);
     }
     catch (const OptionsExitProgram& e) {}
     catch (const std::exception& e)
