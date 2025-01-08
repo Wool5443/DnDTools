@@ -1,5 +1,5 @@
-#include <iostream>
 #include <boost/program_options.hpp>
+#include <fmt/ostream.h>
 
 #include "ParseCLI.hpp"
 
@@ -19,21 +19,23 @@ public:
         m_helpOptions.add_options()
             ("help,h", "produce help message");
 
-        m_cmdOptions.add_options()
+        m_chooseModeOptions.add_options()
             ("dice-mode",
              po::bool_switch(),
              "how many dice to throw")
             ("stats-mode",
              po::bool_switch(),
-             "how many dice to throw")
+             "how many dice to throw");
 
+        m_diceModeOptions.add_options()
             ("dice",
              po::value<std::vector<DiceInt>>(),
-             "dice to throw in dice mode")
+             "list of dice to throw in dice mode or 1d6 if not specified")
             ("count",
              po::value<int>()->default_value(1),
-             "how many dice to throw in dice mode")
+             "how many dice to throw in dice mode");
 
+        m_statsModeOptions.add_options()
             ("stats-dice",
              po::value<DiceInt>()->default_value(DEFAULT_STATS_MODE_DICE),
              "dice to throw for stats in stats mode")
@@ -46,6 +48,11 @@ public:
             ("rethrow-ones",
              po::bool_switch(),
              "rethrow \"ones\" one time in stats mode");
+
+        m_cmdOptions
+            .add(m_chooseModeOptions)
+            .add(m_diceModeOptions)
+            .add(m_statsModeOptions);
 
         m_positionalOptions.add("dice", -1);
     }
@@ -120,13 +127,24 @@ private:
     {
         if (m_vm.count("help"))
         {
-            std::cout << m_helpOptions.add(m_cmdOptions);
+            PrintHelp();
             throw OptionsExitProgram();
         }
     }
 
-    po::options_description m_helpOptions{"Generic options"};
-    po::options_description m_cmdOptions{"Program options"};
+    void PrintHelp()
+    {
+        fmt::print("{}", fmt::streamed(m_helpOptions));
+        fmt::print("{}", fmt::streamed(m_chooseModeOptions));
+        fmt::print("{}", fmt::streamed(m_diceModeOptions));
+        fmt::print("{}", fmt::streamed(m_statsModeOptions));
+    }
+
+    po::options_description m_helpOptions      {"Generic options"};
+    po::options_description m_chooseModeOptions{"Choose mode options"};
+    po::options_description m_diceModeOptions  {"Dice mode options"};
+    po::options_description m_statsModeOptions {"Stats mode options"};
+    po::options_description m_cmdOptions;
     po::options_description m_hiddenCmdOptions;
     po::positional_options_description m_positionalOptions;
 
